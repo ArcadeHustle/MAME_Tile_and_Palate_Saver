@@ -1,0 +1,56 @@
+Hi,
+
+maybe this could be valuable for some people around here too, i modified MAME v0.128 to allow tiles and sprites saving + a couple of other options.
+
+[url=http://pagesperso-orange.fr/franck.charlet/mamed_ts.zip]http://pagesperso-orange.fr/franck.charlet/mamed_ts.zip[/url]
+
+here is an example with capcom's side arms game (as they're directly saved from mame but converted to .png):
+
+[url=http://pagesperso-orange.fr/franck.charlet/sidearms.zip]http://pagesperso-orange.fr/franck.charlet/sidearms.zip[/url]
+
+and the content of the readme file:
+
+[quote]
+This is an enhanced version of MAME (the Multiple Arcade Machine Emulator) v0.128
+with the possiblity to save tiles and palettes.
+
+---------------
+
+Note:
+
+Gfx are saved as .bmp format (files are optimized during saving but can become pretty big anyway, so beware),
+the layout (number of tiles/row) follows the one chosen by the user.
+
+Notice that the files can be saved several times during a session without the older ones being overwritten
+(new ones will be created with different numbers), i implemented it that way because sometimes
+it's necessary to save the set of tiles again due to changes in the palette (mostly between game levels).
+
+What's left is to spot in games which tiles or sprites are used with what palette and to keep the right ones,
+it's not perfect but it makes ripping gfx from arcade games it a lot easier than before.
+
+Notice that some games don't use tiles (or no paletted ones).
+
+---------------
+
+Here are the extra gui commands:
+
+In palette view:
+
+'S' key will create a directory (if necessary) with the loaded game name & save the current palette into it as a .pal file.
+
+In tiles view:
+
+'S' key will create a directory (if necessary) with the loaded game name & save all the tiles with all the possible palettes within a single big (sometimes huge) file.
+
+'LEFT SHIFT'+'S' key will create a directory (if necessary) with the loaded game name & save all the tiles with all the possible palettes scattered in as many files as there are possible palettes.
+
+'G' key will switch the gap between tiles on/off (also reflected in saved files layout).
+
+---------------
+
+I also added a 'windowzoom' option in mame.ini to allow to magnify the window when it's not maximized or in full screen mode, this can be used to obtain a bigger window without being distorted to do pixel perfect zoomed screenshots.
+
+---------------
+
+29/12/2008 - Franck Charlet.
+[/quote]
