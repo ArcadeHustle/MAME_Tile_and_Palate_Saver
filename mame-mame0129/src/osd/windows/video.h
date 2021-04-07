@@ -57,6 +57,7 @@ struct _win_video_config
 	int					windowed;					// start windowed?
 	int					prescale;					// prescale factor
 	int					keepaspect;					// keep aspect ratio
+	int                 windowzoom;					// window mode zoom
 	int					numscreens;					// number of screens
 	int					layerconfig;				// default configuration of layers
 

@@ -135,9 +135,9 @@ WRITE16_HANDLER( lemmings_pixel_0_w )
 
 WRITE16_HANDLER( lemmings_pixel_1_w )
 {
-	int sx,sy,src,old,tile;
+	int sx,sy,src/*,old*/,tile;
 
-	old=lemmings_pixel_1_data[offset];
+	//old=lemmings_pixel_1_data[offset];
 	COMBINE_DATA(&lemmings_pixel_1_data[offset]);
 	src=lemmings_pixel_1_data[offset];
 //  if (old==src)

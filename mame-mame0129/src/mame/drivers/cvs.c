@@ -412,15 +412,15 @@ static READ8_HANDLER( cvs_speech_command_r )
 
 static WRITE8_HANDLER( cvs_tms5110_ctl_w )
 {
-	UINT8 ctl;
+//	UINT8 ctl;
 
 	cvs_tms5110_ctl_data[offset] = (~data >> 7) & 0x01;
 
-	ctl = 0 |								/* CTL1 */
-		  (cvs_tms5110_ctl_data[1] << 1) |	/* CTL2 */
-		  0 |								/* CTL4 */
-		  (cvs_tms5110_ctl_data[0] << 3);	/* CTL8 */
-
+/*	ctl = 0 |								// CTL1
+		  (cvs_tms5110_ctl_data[1] << 1) |	// CTL2
+		  0 |								// CTL4
+		  (cvs_tms5110_ctl_data[0] << 3);	// CTL8
+*/
 	//tms5110_ctl_w(0, ctl);
 }
 

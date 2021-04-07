@@ -682,7 +682,7 @@ static void stv_vdp1_setup_shading(const struct spoint* q, const rectangle *clip
 	INT32 sl1, slg1, slb1, slr1;
 	INT32 sl2, slg2, slb2, slr2;
 	int pmin, pmax, i, ps1, ps2;
-	struct shaded_point p[8];
+	struct shaded_point p[64];
 	UINT16 gd[4];
 
 	if ( stv_read_gouraud_table() == 0 ) return;
@@ -1240,7 +1240,7 @@ static void vdp1_fill_quad(running_machine *machine, const rectangle *cliprect, 
 {
 	INT32 sl1, sl2, slu1, slu2, slv1, slv2, cury, limy, x1, x2, u1, u2, v1, v2, delta;
 	int pmin, pmax, i, ps1, ps2;
-	struct spoint p[8];
+	struct spoint p[64];
 
 	for(i=0; i<4; i++) {
 		p[i].x = p[i+4].x = q[i].x << FRAC_SHIFT;

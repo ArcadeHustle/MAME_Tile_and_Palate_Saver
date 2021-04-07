@@ -882,12 +882,12 @@ static void hanamai_copylayer(bitmap_t *bitmap,const rectangle *cliprect,int i)
 	}
 
 	{
-		int dy,length,pen,offs;
+		int dy,length,pen/*,offs*/;
 		UINT8 *src1 = dynax_pixmap[i][1];
 		UINT8 *src2 = dynax_pixmap[i][0];
 
 		int palbase = 16*color;
-		offs = 0;
+//		offs = 0;
 
 		for (dy = 0; dy < 256; dy++)
 		{
@@ -943,12 +943,12 @@ static void jantouki_copylayer(bitmap_t *bitmap,const rectangle *cliprect,int i,
 	}
 
 	{
-		int dy,length,pen,offs;
+		int dy,length,pen/*,offs*/;
 		UINT8 *src1 = dynax_pixmap[i][1];
 		UINT8 *src2 = dynax_pixmap[i][0];
 
 		int palbase = 16*color;
-		offs = 0;
+//		offs = 0;
 
 		for (dy = 0; dy < 256; dy++)
 		{
@@ -1007,11 +1007,11 @@ static void mjdialq2_copylayer(bitmap_t *bitmap,const rectangle *cliprect,int i)
 	scrolly = dynax_blit_scroll_y;
 
 	{
-		int dy,length,pen,offs;
+		int dy,length,pen/*,offs*/;
 		UINT8 *src = dynax_pixmap[i][0];
 
 		int palbase = 16*color;
-		offs = 0;
+//		offs = 0;
 
 		for (dy = 0; dy < 256; dy++)
 		{

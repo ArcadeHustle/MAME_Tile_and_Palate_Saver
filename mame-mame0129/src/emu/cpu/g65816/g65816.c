@@ -320,7 +320,7 @@ static CPU_INIT( g65816 )
 {
 	g65816i_cpu_struct *cpustate = device->token;
 
-	memset(cpustate, 0, sizeof(cpustate));
+	memset(cpustate, 0, sizeof(g65816i_cpu_struct));
 
 	g65816_set_irq_callback(cpustate, irqcallback);
 	cpustate->device = device;

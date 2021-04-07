@@ -838,7 +838,7 @@ static void execute_fdlockguess(running_machine *machine, int ref, int params, c
 static void execute_fdeliminate(running_machine *machine, int ref, int params, const char **param)
 {
 	int pnum, posssrc, possdst;
-	int plist[10];
+	int plist[128];
 
 	/* extract parameters */
 	for (pnum = 0; pnum < params; pnum++)
@@ -1389,7 +1389,7 @@ static void execute_fdcsearch(running_machine *machine, int ref, int params, con
 static fd1094_possibility *try_all_possibilities(const address_space *space, int basepc, int offset, int length, UINT8 *instrbuffer, UINT8 *keybuffer, fd1094_possibility *possdata)
 {
 	UINT8 keymask, keystat;
-	UINT16 possvalue[4];
+	UINT16 possvalue[64];
 	UINT8 posskey[4];
 	int numposs = 0;
 	int decoded;

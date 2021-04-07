@@ -384,31 +384,62 @@ static HRESULT d3d_device_set_texture(d3d_device *dev, DWORD stage, d3d_texture 
 	return IDirect3DDevice9_SetTexture(device, stage, texture);
 }
 
+typedef enum _D3DTEXTURESTAGESTATETYPE_
+{
+    _D3DTSS_COLOROP        =  1, /* D3DTEXTUREOP - per-stage blending controls for color channels */
+    _D3DTSS_COLORARG1      =  2, /* D3DTA_* (texture arg) */
+    _D3DTSS_COLORARG2      =  3, /* D3DTA_* (texture arg) */
+    _D3DTSS_ALPHAOP        =  4, /* D3DTEXTUREOP - per-stage blending controls for alpha channel */
+    _D3DTSS_ALPHAARG1      =  5, /* D3DTA_* (texture arg) */
+    _D3DTSS_ALPHAARG2      =  6, /* D3DTA_* (texture arg) */
+    _D3DTSS_BUMPENVMAT00   =  7, /* float (bump mapping matrix) */
+    _D3DTSS_BUMPENVMAT01   =  8, /* float (bump mapping matrix) */
+    _D3DTSS_BUMPENVMAT10   =  9, /* float (bump mapping matrix) */
+    _D3DTSS_BUMPENVMAT11   = 10, /* float (bump mapping matrix) */
+    _D3DTSS_TEXCOORDINDEX  = 11, /* identifies which set of texture coordinates index this texture */
+    _D3DTSS_ADDRESSU       = 13, /* D3DTEXTUREADDRESS for U coordinate */
+    _D3DTSS_ADDRESSV       = 14, /* D3DTEXTUREADDRESS for V coordinate */
+    _D3DTSS_BORDERCOLOR    = 15, /* D3DCOLOR */
+    _D3DTSS_MAGFILTER      = 16, /* D3DTEXTUREFILTER filter to use for magnification */
+    _D3DTSS_MINFILTER      = 17, /* D3DTEXTUREFILTER filter to use for minification */
+    _D3DTSS_MIPFILTER      = 18, /* D3DTEXTUREFILTER filter to use between mipmaps during minification */
+    _D3DTSS_MIPMAPLODBIAS  = 19, /* float Mipmap LOD bias */
+    _D3DTSS_MAXMIPLEVEL    = 20, /* DWORD 0..(n-1) LOD index of largest map to use (0 == largest) */
+    _D3DTSS_MAXANISOTROPY  = 21, /* DWORD maximum anisotropy */
+    _D3DTSS_BUMPENVLSCALE  = 22, /* float scale for bump map luminance */
+    _D3DTSS_BUMPENVLOFFSET = 23, /* float offset for bump map luminance */
+    _D3DTSS_TEXTURETRANSFORMFLAGS = 24, /* D3DTEXTURETRANSFORMFLAGS controls texture transform */
+    _D3DTSS_ADDRESSW       = 25, /* D3DTEXTUREADDRESS for W coordinate */
+    _D3DTSS_COLORARG0      = 26, /* D3DTA_* third arg for triadic ops */
+    _D3DTSS_ALPHAARG0      = 27, /* D3DTA_* third arg for triadic ops */
+    _D3DTSS_RESULTARG      = 28, /* D3DTA_* arg for result (CURRENT or TEMP) */
+    _D3DTSS_FORCE_DWORD   = 0x7fffffff, /* force 32-bit size enum */
+} D3DTEXTURESTAGESTATETYPE_;
 
-static HRESULT d3d_device_set_texture_stage_state(d3d_device *dev, DWORD stage, D3DTEXTURESTAGESTATETYPE state, DWORD value)
+static HRESULT d3d_device_set_texture_stage_state(d3d_device *dev, DWORD stage, D3DTEXTURESTAGESTATETYPE_ state, DWORD value)
 {
 	IDirect3DDevice9 *device = (IDirect3DDevice9 *)dev;
 
 	// some state which was here got pushed into sampler state in D3D9
 	switch (state)
 	{
-		case D3DTSS_ADDRESSU:
+		case _D3DTSS_ADDRESSU:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_ADDRESSU, value);
-		case D3DTSS_ADDRESSV:
+		case _D3DTSS_ADDRESSV:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_ADDRESSV, value);
-		case D3DTSS_BORDERCOLOR:
+		case _D3DTSS_BORDERCOLOR:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_BORDERCOLOR, value);
-		case D3DTSS_MAGFILTER:
+		case _D3DTSS_MAGFILTER:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_MAGFILTER, value);
-		case D3DTSS_MINFILTER:
+		case _D3DTSS_MINFILTER:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_MINFILTER, value);
-		case D3DTSS_MIPFILTER:
+		case _D3DTSS_MIPFILTER:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_MIPFILTER, value);
-		case D3DTSS_MIPMAPLODBIAS:
+		case _D3DTSS_MIPMAPLODBIAS:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_MIPMAPLODBIAS, value);
-		case D3DTSS_MAXMIPLEVEL:
+		case _D3DTSS_MAXMIPLEVEL:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_MAXMIPLEVEL, value);
-		case D3DTSS_MAXANISOTROPY:
+		case _D3DTSS_MAXANISOTROPY:
 			return IDirect3DDevice9_SetSamplerState(device, stage, D3DSAMP_MAXANISOTROPY, value);
 		default:
 			return IDirect3DDevice9_SetTextureStageState(device, stage, state, value);

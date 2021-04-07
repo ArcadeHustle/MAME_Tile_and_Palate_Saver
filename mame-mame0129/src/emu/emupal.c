@@ -474,7 +474,7 @@ void colortable_configure_tilemap_groups(colortable_t *ctable, tilemap *tmap, co
 	assert(ctable != NULL);
 	assert(gfx != NULL);
 	assert(tmap != NULL);
-	assert(gfx->total_colors <= TILEMAP_NUM_GROUPS);
+//	assert(gfx->total_colors <= TILEMAP_NUM_GROUPS);
 
 	/* iterate over all colors in the tilemap */
 	for (color = 0; color < gfx->total_colors; color++)

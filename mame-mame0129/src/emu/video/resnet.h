@@ -148,9 +148,9 @@ struct _res_net_decode_info {
 	int	numcomp;
 	int	start;
 	int	end;
-	UINT16	offset[3 * RES_NET_MAX_COMP];
-	INT16	shift[3 * RES_NET_MAX_COMP];
-	UINT16 	mask[3 * RES_NET_MAX_COMP];
+	UINT16	offset[3 * RES_NET_MAX_COMP * 2];
+	INT16	shift[3 * RES_NET_MAX_COMP * 2];
+	UINT16 	mask[3 * RES_NET_MAX_COMP * 2];
 };
 
 /* return a single value for one channel */

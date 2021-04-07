@@ -600,8 +600,12 @@ static void decode_graphics(running_machine *machine, const gfx_decode_entry *gf
 
 	/* count total graphics elements */
 	for (i = 0; i < MAX_GFX_ELEMENTS; i++)
+    {
 		if (machine->gfx[i] != NULL)
+        {
 			totalgfx += machine->gfx[i]->total_elements;
+        }
+    }
 
 	/* loop over all elements */
 	for (i = 0; i < MAX_GFX_ELEMENTS; i++)

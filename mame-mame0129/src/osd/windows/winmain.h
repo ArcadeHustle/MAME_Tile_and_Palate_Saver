@@ -28,6 +28,7 @@
 #define WINOPTION_WINDOW				"window"
 #define WINOPTION_MAXIMIZE				"maximize"
 #define WINOPTION_KEEPASPECT			"keepaspect"
+#define WINOPTION_WINDOWZOOM			"windowzoom"
 #define WINOPTION_PRESCALE				"prescale"
 #define WINOPTION_EFFECT				"effect"
 #define WINOPTION_WAITVSYNC				"waitvsync"

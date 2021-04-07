@@ -407,7 +407,7 @@ UINT64 core_fsize(core_file *file)
 
 UINT32 core_fread(core_file *file, void *buffer, UINT32 length)
 {
-	file_error filerr;
+//	file_error filerr;
 	UINT32 bytes_read = 0;
 
 	/* flush any buffered char */
@@ -429,7 +429,7 @@ UINT32 core_fread(core_file *file, void *buffer, UINT32 length)
 				/* read as much as makes sense into the buffer */
 				file->bufferbase = file->offset + bytes_read;
 				file->bufferbytes = 0;
-				filerr = osd_or_zlib_read(file, file->buffer, file->bufferbase, sizeof(file->buffer), &file->bufferbytes);
+				/*filerr =*/ osd_or_zlib_read(file, file->buffer, file->bufferbase, sizeof(file->buffer), &file->bufferbytes);
 
 				/* do a bounded copy from the buffer to the destination */
 				bytes_read += safe_buffer_copy(file->buffer, 0, file->bufferbytes, buffer, bytes_read, length);
@@ -439,7 +439,7 @@ UINT32 core_fread(core_file *file, void *buffer, UINT32 length)
 			else
 			{
 				UINT32 new_bytes_read = 0;
-				filerr = osd_or_zlib_read(file, (UINT8 *)buffer + bytes_read, file->offset + bytes_read, length - bytes_read, &new_bytes_read);
+				/*filerr = */osd_or_zlib_read(file, (UINT8 *)buffer + bytes_read, file->offset + bytes_read, length - bytes_read, &new_bytes_read);
 				bytes_read += new_bytes_read;
 			}
 		}
@@ -699,7 +699,7 @@ const void *core_fbuffer(core_file *file)
 UINT32 core_fwrite(core_file *file, const void *buffer, UINT32 length)
 {
 	UINT32 bytes_written = 0;
-	file_error filerr;
+//	file_error filerr;
 
 	/* can't write to RAM-based stuff */
 	if (file->data != NULL)
@@ -713,7 +713,7 @@ UINT32 core_fwrite(core_file *file, const void *buffer, UINT32 length)
 	file->bufferbytes = 0;
 
 	/* do the write */
-	filerr = osd_or_zlib_write(file, buffer, file->offset, length, &bytes_written);
+	/*filerr =*/ osd_or_zlib_write(file, buffer, file->offset, length, &bytes_written);
 
 	/* return the number of bytes read */
 	file->offset += bytes_written;

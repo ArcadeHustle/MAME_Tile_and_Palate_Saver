@@ -2048,7 +2048,7 @@ static void mix_all_layers(int which, int xoffs, bitmap_t *bitmap, const rectang
 		UINT8		effpri;				/* effective priority = (priority << 3) | layer_priority */
 		UINT8		mixshift;			/* shift from control reg */
 		UINT8		coloroffs;			/* color offset index */
-	} layerorder[16][8], layersort[8];
+	} layerorder[16][8], layersort[16];
 	struct layer_info temp_sprite_save = { 0 };
 	UINT8 sprgroup_shift, sprgroup_mask, sprgroup_or;
 	int numlayers, laynum, groupnum;

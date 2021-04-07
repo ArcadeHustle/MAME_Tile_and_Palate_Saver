@@ -217,13 +217,13 @@ WRITE8_HANDLER( hnayayoi_palbank_w )
 static void draw_layer_interleaved(bitmap_t *bitmap, const rectangle *cliprect,
 		int left_pixmap, int right_pixmap, int palbase, int transp)
 {
-	int county,countx,pen,offs;
+	int county,countx,pen/*,offs*/;
 	UINT8 *src1 = pixmap[left_pixmap];
 	UINT8 *src2 = pixmap[right_pixmap];
 	UINT16 *dstbase = (UINT16 *)bitmap->base;
 
 	palbase *= 16;
-	offs = 0;
+//	offs = 0;
 
 	for (county = 255; county >= 0; county--, dstbase += bitmap->rowpixels)
 	{

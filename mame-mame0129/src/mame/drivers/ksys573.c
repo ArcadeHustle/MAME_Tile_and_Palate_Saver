@@ -891,7 +891,7 @@ static void atapi_init(running_machine *machine)
 	int i;
 
 	atapi_regs = auto_malloc( ATAPI_REG_MAX );
-	memset(atapi_regs, 0, sizeof(atapi_regs));
+	memset(atapi_regs, 0, ATAPI_REG_MAX); //sizeof(atapi_regs));
 
 	atapi_regs[ATAPI_REG_CMDSTATUS] = 0;
 	atapi_regs[ATAPI_REG_ERRFEAT] = 1;

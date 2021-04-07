@@ -247,7 +247,7 @@ static void fill_quad(bitmap_t *bitmap, const struct quad *q)
 {
 	INT32 sl1, sl2, cury, limy, x1, x2;
 	int pmin, pmax, i, ps1, ps2;
-	struct spoint p[8];
+	struct spoint p[256];
 	int color = q->col;
 
 	if(color < 0) {

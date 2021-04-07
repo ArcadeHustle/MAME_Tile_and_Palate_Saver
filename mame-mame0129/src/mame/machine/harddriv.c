@@ -895,9 +895,13 @@ static TIMER_CALLBACK( deferred_adsp_bank_switch )
 		if (commands)
 		{
 			INT16 *base = (INT16 *)&som_memory[param * 0x2000];
-			INT16 *end = base + (UINT16)*base++;
-			INT16 *current = base;
-			INT16 *table = base + (UINT16)*current++;
+			INT16 *current;
+			INT16 *end;
+			INT16 *table;
+			current = base;
+			end = base + (UINT16) *current++;
+			base = current;
+			table = base + (UINT16) *current++;
 
 			fprintf(commands, "\n---------------\n");
 

@@ -390,7 +390,7 @@ static void turbofrc_draw_sprites(running_machine *machine, bitmap_t *bitmap,con
 		if (!(aerofgt_spriteram3[attr_start + 2] & 0x0080)) continue;
 		pri = aerofgt_spriteram3[attr_start + 2] & 0x0010;
 		if ( chip_disabled_pri & !pri) continue;
-		if (!chip_disabled_pri & (pri>>4)) continue;
+		if ((!chip_disabled_pri) & (pri>>4)) continue;
 		ox = aerofgt_spriteram3[attr_start + 1] & 0x01ff;
 		xsize = (aerofgt_spriteram3[attr_start + 2] & 0x0700) >> 8;
 		zoomx = (aerofgt_spriteram3[attr_start + 1] & 0xf000) >> 12;
@@ -465,7 +465,7 @@ static void spinlbrk_draw_sprites(running_machine *machine, bitmap_t *bitmap,con
 		if (!(aerofgt_spriteram3[attr_start + 2] & 0x0080)) continue;
 		pri = aerofgt_spriteram3[attr_start + 2] & 0x0010;
 		if ( chip_disabled_pri & !pri) continue;
-		if (!chip_disabled_pri & (pri>>4)) continue;
+		if ((!chip_disabled_pri) & (pri>>4)) continue;
 		ox = aerofgt_spriteram3[attr_start + 1] & 0x01ff;
 		xsize = (aerofgt_spriteram3[attr_start + 2] & 0x0700) >> 8;
 		zoomx = (aerofgt_spriteram3[attr_start + 1] & 0xf000) >> 12;
@@ -541,7 +541,7 @@ static void aerfboo2_draw_sprites(running_machine *machine, bitmap_t *bitmap,con
 		if (!(aerofgt_spriteram3[attr_start + 2] & 0x0080)) continue;
 		pri = aerofgt_spriteram3[attr_start + 2] & 0x0010;
 		if ( chip_disabled_pri & !pri) continue;
-		if (!chip_disabled_pri & (pri>>4)) continue;
+		if ((!chip_disabled_pri) & (pri>>4)) continue;
 		ox = aerofgt_spriteram3[attr_start + 1] & 0x01ff;
 		xsize = (aerofgt_spriteram3[attr_start + 2] & 0x0700) >> 8;
 		zoomx = (aerofgt_spriteram3[attr_start + 1] & 0xf000) >> 12;

@@ -1319,7 +1319,7 @@ error:
 
 static avi_error extract_movie_info(avi_file *file)
 {
-	avi_stream *audiostream;
+	//avi_stream *audiostream;
 	avi_stream *stream;
 
 	/* get the video stream */
@@ -1350,7 +1350,7 @@ static avi_error extract_movie_info(avi_file *file)
 	}
 
 	/* now make sure all other audio streams are valid */
-	audiostream = stream;
+	//audiostream = stream;
 	while (1)
 	{
 		/* get the stream info */
@@ -1483,10 +1483,13 @@ error:
 
 static avi_error parse_indx_chunk(avi_file *file, avi_stream *stream, avi_chunk *strf)
 {
-	UINT32 entries, entry, id;
+	UINT32 entries;
+	UINT32 entry;
+//	UINT32 id;
 	UINT8 *chunkdata = NULL;
 	UINT16 longs_per_entry;
-	UINT8 subtype, type;
+	//UINT8 subtype;
+	UINT8 type;
 	UINT64 baseoffset;
 	avi_error avierr;
 
@@ -1497,10 +1500,10 @@ static avi_error parse_indx_chunk(avi_file *file, avi_stream *stream, avi_chunk 
 
 	/* extract the data */
 	longs_per_entry = fetch_16bits(&chunkdata[0]);
-	subtype = chunkdata[2];
+	//subtype = chunkdata[2];
 	type = chunkdata[3];
 	entries = fetch_32bits(&chunkdata[4]);
-	id = fetch_32bits(&chunkdata[8]);
+//	id = fetch_32bits(&chunkdata[8]);
 	baseoffset = fetch_64bits(&chunkdata[12]);
 
 	/* if this is a superindex, loop over entries and call ourselves recursively */
@@ -2107,7 +2110,7 @@ static avi_error write_indx_chunk(avi_file *file, avi_stream *stream, int initia
 static avi_error write_idx1_chunk(avi_file *file)
 {
 	UINT32 tempbuflength = compute_idx1_size(file) - 8;
-	UINT32 curchunk[2] = { 0 };
+	UINT32 curchunk[256] = { 0 };
 	UINT32 curoffset;
 	avi_error avierr;
 	UINT8 *tempbuf;

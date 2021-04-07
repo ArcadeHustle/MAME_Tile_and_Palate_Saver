@@ -725,7 +725,7 @@ WRITE64_HANDLER( dc_gdrom_w )
 		off=offset << 1;
 	}
 
-	mame_printf_verbose("GDROM: [%08x=%x]write %llx to %x, mask %llx\n", 0x5f7000+off*4, dat, data, offset, mem_mask);
+	mame_printf_verbose("GDROM: [%08x=%x]write %dlx to %x, mask %dlx\n", 0x5f7000+off*4, dat, data, offset, mem_mask);
 }
 
 READ64_HANDLER( dc_g1_ctrl_r )
@@ -752,7 +752,7 @@ WRITE64_HANDLER( dc_g1_ctrl_w )
 	old = g1bus_regs[reg];
 
 	g1bus_regs[reg] = dat; // 5f6c00+reg*4=dat
-	mame_printf_verbose("G1CTRL: [%08x=%x] write %llx to %x, mask %llx\n", 0x5f7400+reg*4, dat, data, offset, mem_mask);
+	mame_printf_verbose("G1CTRL: [%08x=%x] write %dlx to %x, mask %dlx\n", 0x5f7400+reg*4, dat, data, offset, mem_mask);
 	switch (reg)
 	{
 	case SB_GDST:
@@ -808,7 +808,7 @@ WRITE64_HANDLER( dc_g2_ctrl_w )
 		mame_printf_verbose("G2CTRL: AICA:G2-DMA start\n");
 		break;
 	}
-	mame_printf_verbose("G2CTRL: [%08x=%x] write %llx to %x, mask %llx\n", 0x5f7800+reg*4, dat, data, offset, mem_mask);
+	mame_printf_verbose("G2CTRL: [%08x=%x] write %dlx to %x, mask %dlx\n", 0x5f7800+reg*4, dat, data, offset, mem_mask);
 }
 
 READ64_HANDLER( dc_modem_r )
@@ -837,7 +837,7 @@ WRITE64_HANDLER( dc_modem_w )
 
 	reg = decode_reg32_64(space->machine, offset, mem_mask, &shift);
 	dat = (UINT32)(data >> shift);
-	mame_printf_verbose("MODEM: [%08x=%x] write %llx to %x, mask %llx\n", 0x600000+reg*4, dat, data, offset, mem_mask);
+	mame_printf_verbose("MODEM: [%08x=%x] write %dlx to %x, mask %dlx\n", 0x600000+reg*4, dat, data, offset, mem_mask);
 }
 
 READ64_HANDLER( dc_rtc_r )
@@ -878,7 +878,7 @@ WRITE64_HANDLER( dc_rtc_w )
 		dc_rtcregister[RTC3] &= 1;
 		break;
 	}
-	mame_printf_verbose("RTC: [%08x=%x] write %llx to %x, mask %llx\n", 0x710000 + reg*4, dat, data, offset, mem_mask);
+	mame_printf_verbose("RTC: [%08x=%x] write %dlx to %x, mask %dlx\n", 0x710000 + reg*4, dat, data, offset, mem_mask);
 }
 
 static TIMER_CALLBACK(dc_rtc_increment)

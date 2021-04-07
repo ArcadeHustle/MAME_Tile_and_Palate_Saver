@@ -371,6 +371,7 @@ static void extract_video_config(running_machine *machine)
 	video_config.windowed      = options_get_bool(mame_options(), WINOPTION_WINDOW);
 	video_config.prescale      = options_get_int(mame_options(), WINOPTION_PRESCALE);
 	video_config.keepaspect    = options_get_bool(mame_options(), WINOPTION_KEEPASPECT);
+	video_config.windowzoom    = options_get_int(mame_options(), WINOPTION_WINDOWZOOM);
 	video_config.numscreens    = options_get_int(mame_options(), WINOPTION_NUMSCREENS);
 
 	// if we are in debug mode, never go full screen

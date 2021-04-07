@@ -110,7 +110,7 @@ typedef struct
 
 	int pcfsel;	     			// last pcflush entry set
 	int maxpcfsel;				// highest valid pcflush entry
-	UINT32 pcflushes[16];			// pcflush entries
+	UINT32 pcflushes[32];			// pcflush entries
 
 	INT8	irq_line_state[17];
 	cpu_irq_callback irq_callback;

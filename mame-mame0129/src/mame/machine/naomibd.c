@@ -328,10 +328,10 @@ static void load_rom_gdrom(naomibd_state *v)
 	UINT8 *ptr;
 	UINT32 start,size,sectors,dir;
 	int pos,len,a;
-	char name[15];
+	char name[16];
 	UINT64 key;
 
-	memset(name, 15, 0);
+	memset(name, 0, 15);
 	memcpy(name, v->picdata+33, 7);
 	memcpy(name+7, v->picdata+25, 7);
 	gdromfile = cdrom_open(v->gdromchd);

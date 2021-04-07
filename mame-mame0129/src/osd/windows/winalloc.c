@@ -425,7 +425,7 @@ void check_unfreed_mem(void)
 				if (total == 0)
 					fprintf(stderr, "--- memory leak warning ---\n");
 				total += entry->size;
-				fprintf(stderr, "allocation #%06d, %d bytes (%s:%d)\n", entry->id, entry->size, entry->file, entry->line);
+				fprintf(stderr, "allocation #%06d, %d bytes (%s:%d)\n", entry->id, (int) entry->size, entry->file, entry->line);
 			}
 
 		memory_lock_release();
@@ -566,7 +566,7 @@ static void global_init(void)
 	if (envstring != NULL)
 		use_malloc_tracking = (_ttoi(envstring) != 0);
 
-#ifdef PTR64
+/*#ifdef PTR64
 	// 64-bit builds also can allocate everything under 4GB, unless disabled
 	envstring = _tgetenv(_T("OSDDEBUG4GB"));
 	if (envstring == NULL || _ttoi(envstring) != 0)
@@ -577,15 +577,15 @@ static void global_init(void)
 		for (allocshift = 8 + 20; allocshift >= 12; allocshift--)
 		{
 			// keep allocating address space at that size until we get something >4gb
-			while ((UINT64)VirtualAlloc(NULL, (UINT64)1 << allocshift, MEM_RESERVE, PAGE_NOACCESS) < ((UINT64)1 << 32)) ;
+			while ((UINT64) VirtualAlloc(NULL, (UINT64) 1 << allocshift, MEM_RESERVE, PAGE_NOACCESS) < ((UINT64) 1 << 32)) ;
 		}
 
 		// loop from 64k down
 		for (allocshift = 6 + 10; allocshift >= 1; allocshift--)
 		{
 			// keep allocating memory until we get something >4gb
-			while ((UINT64)GlobalAlloc(GMEM_FIXED, (UINT64)1 << allocshift) < ((UINT64)1 << 32)) ;
+			while ((UINT64) GlobalAlloc(GMEM_FIXED, (UINT64) 1 << allocshift) < ((UINT64) 1 << 32)) ;
 		}
 	}
-#endif
+#endif*/
 }

@@ -86,7 +86,7 @@ WRITE8_HANDLER( cchasm_snd_io_w )
 
 WRITE16_HANDLER( cchasm_io_w )
 {
-    static int led;
+//    static int led;
 
 	if (ACCESSING_BITS_8_15)
 	{
@@ -103,7 +103,7 @@ WRITE16_HANDLER( cchasm_io_w )
 			cpu_set_input_line(space->machine->cpu[1], INPUT_LINE_NMI, PULSE_LINE);
 			break;
 		case 2:
-			led = data;
+//			led = data;
 			break;
 		}
 	}

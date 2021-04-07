@@ -3605,8 +3605,8 @@ static struct svp_vars
 {
 	UINT8 *iram; // IRAM (0-0x7ff)
 	UINT8 *dram; // [0x20000];
-	UINT32 pmac_read[6];	// read modes/addrs for PM0-PM5
-	UINT32 pmac_write[6];	// write ...
+	UINT32 pmac_read[128];	// read modes/addrs for PM0-PM5
+	UINT32 pmac_write[128];	// write ...
 	PAIR pmc;
 	#define SSP_PMC_HAVE_ADDR  1  // address written to PMAC, waiting for mode
 	#define SSP_PMC_SET        2  // PMAC is set, PMx can be programmed
@@ -5306,8 +5306,10 @@ static void genesis_render_videoline_to_videobuffer(int scanline)
 					}
 					else if (spritedata==0x3f)
 					{
+                        UINT32 disamb;
+						disamb = video_renderline[x];
 						/* This is a Shadow operator set shadow bit */
-						video_renderline[x] = video_renderline[x]|=0x2000;
+						video_renderline[x] = disamb |= 0x2000;
 					}
 					else
 					{

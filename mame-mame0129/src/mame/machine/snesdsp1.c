@@ -138,7 +138,7 @@ UINT8 DSP1_getSr(void)
 
 UINT8 DSP1_getDr(void)
 {
-   UINT8 oDr;
+   UINT8 oDr = 0;
 
    DSP1_fsmStep(1, &oDr);
    return oDr;

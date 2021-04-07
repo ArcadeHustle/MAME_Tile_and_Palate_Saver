@@ -21,7 +21,7 @@ static UINT32 pvrta_regs[0x2000/4];
 static const int pvr_parconfseq[] = {1,2,3,2,3,4,5,6,5,6,7,8,9,10,11,12,13,14,13,14,15,16,17,16,17,0,0,0,0,0,18,19,20,19,20,21,22,23,22,23};
 static const int pvr_wordsvertex[24]  = {8,8,8,8,8,16,16,8,8,8, 8, 8,8,8,8,8,16,16, 8,16,16,8,16,16};
 static const int pvr_wordspolygon[24] = {8,8,8,8,8, 8, 8,8,8,8,16,16,8,8,8,8, 8, 8,16,16,16,8, 8, 8};
-static int pvr_parameterconfig[64];
+static int pvr_parameterconfig[512];
 static UINT32 dilated0[15][1024];
 static UINT32 dilated1[15][1024];
 static int dilatechose[64];
@@ -633,7 +633,7 @@ WRITE64_HANDLER( ta_fifo_yuv_w )
 	reg = decode_reg_64(offset, mem_mask, &shift);
 	dat = (UINT32)(data >> shift);
 
-	mame_printf_verbose("YUV FIFO: [%08x=%x] write %llx to %x, mask %llx\n", 0x10800000+reg*4, dat, data, offset, mem_mask);
+	mame_printf_verbose("YUV FIFO: [%08x=%x] write %dlx to %x, mask %dlx\n", 0x10800000+reg*4, dat, data, offset, mem_mask);
 }
 
 /* test video start */

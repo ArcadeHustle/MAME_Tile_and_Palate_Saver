@@ -401,7 +401,7 @@ static void nslasher_draw_sprites(running_machine* machine, bitmap_t *bitmap, co
 	for (offs = 0; offs<0x400; offs+=4)
 	{
 		int x,y,sprite,colour,multi,fx,fy,inc,flash,mult; /*,pri=0,spri=0;*/
-		int trans;
+		//int trans;
 
 		sprite = spritedata[offs+1] & 0xffff;
 
@@ -409,7 +409,7 @@ static void nslasher_draw_sprites(running_machine* machine, bitmap_t *bitmap, co
 		flash=y&0x1000;
 		if (flash && (video_screen_get_frame_number(machine->primary_screen) & 1)) continue;
 
-		trans=TRANSPARENCY_PEN;
+		//trans=TRANSPARENCY_PEN;
 		x = spritedata[offs+2];
 
 		// Prepare colour, priority and alpha info
@@ -1099,7 +1099,7 @@ static void print_debug_info(bitmap_t *bitmap)
 
 static void tilemap_raster_draw(bitmap_t *bitmap, const rectangle *cliprect, int flags, int pri)
 {
-	int ptr=0,sx0,sy0,sx1,sy1,start,end=0;
+	int ptr=0,/*sx0,sy0,*/sx1,sy1,start,end=0;
 	rectangle clip;
 	int overflow=deco32_raster_display_position;
 
@@ -1116,8 +1116,8 @@ static void tilemap_raster_draw(bitmap_t *bitmap, const rectangle *cliprect, int
 	while (ptr<overflow) {
 		start=end;
 		end=deco32_raster_display_list[ptr++];
-		sx0=deco32_raster_display_list[ptr++];
-		sy0=deco32_raster_display_list[ptr++];
+		//sx0=deco32_raster_display_list[ptr++];
+		//sy0=deco32_raster_display_list[ptr++];
 		sx1=deco32_raster_display_list[ptr++];
 		sy1=deco32_raster_display_list[ptr++];
 

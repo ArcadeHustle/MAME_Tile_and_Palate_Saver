@@ -282,7 +282,7 @@ static VIDEO_START(wheelfir)
 
 }
 
-static UINT8 wheelfir_palette[8192];
+static UINT8 wheelfir_palette[8192+10];
 static int wheelfir_palpos = 0;
 /* Press R to show a page of gfx, Q / E to move between pages, and W to clear the framebuffer */
 static VIDEO_UPDATE(wheelfir)

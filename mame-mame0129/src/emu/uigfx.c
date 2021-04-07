@@ -16,11 +16,39 @@
 #include "rendutil.h"
 #include "uigfx.h"
 
-
-
 /***************************************************************************
     TYPE DEFINITIONS
 ***************************************************************************/
+
+#pragma pack(push, 1)
+typedef struct tagBITMAPFILEHEADER { 
+  UINT16  bfType; 
+  UINT32  bfSize; 
+  UINT16  bfReserved1; 
+  UINT16  bfReserved2; 
+  UINT32  bfOffBits; 
+} BITMAPFILEHEADER, *PBITMAPFILEHEADER; 
+
+typedef struct tagBITMAPINFOHEADER{
+  UINT32 biSize; 
+  UINT32 biWidth; 
+  UINT32 biHeight; 
+  UINT16 biPlanes; 
+  UINT16 biBitCount; 
+  UINT32 biCompression; 
+  UINT32 biSizeImage; 
+  UINT32 biXPelsPerMeter; 
+  UINT32 biYPelsPerMeter; 
+  UINT32 biClrUsed; 
+  UINT32 biClrImportant; 
+} BITMAPINFOHEADER, *PBITMAPINFOHEADER; 
+
+typedef struct tagRGBTRI {
+  UINT8  rgbBlue; 
+  UINT8  rgbGreen; 
+  UINT8  rgbRed; 
+} RGBTRI; 
+#pragma pack(pop)
 
 typedef struct _ui_gfx_state ui_gfx_state;
 struct _ui_gfx_state
@@ -68,7 +96,8 @@ struct _ui_gfx_state
 ***************************************************************************/
 
 static ui_gfx_state ui_gfx;
-
+static int gap[256];
+extern int mkdir(char *);
 
 
 /***************************************************************************
@@ -80,12 +109,14 @@ static void ui_gfx_exit(running_machine *machine);
 /* palette handling */
 static void palette_handle_keys(running_machine *machine, ui_gfx_state *state);
 static void palette_handler(running_machine *machine, ui_gfx_state *state);
+static void palette_save(running_machine *machine, ui_gfx_state *state, int total);
 
 /* graphics set handling */
 static void gfxset_handle_keys(running_machine *machine, ui_gfx_state *state, int xcells, int ycells);
 static void gfxset_draw_item(running_machine *machine, const gfx_element *gfx, int index, bitmap_t *bitmap, int dstx, int dsty, int color, int rotate);
 static void gfxset_update_bitmap(running_machine *machine, ui_gfx_state *state, int xcells, int ycells, gfx_element *gfx);
 static void gfxset_handler(running_machine *machine, ui_gfx_state *state);
+static void gfxset_save(running_machine *machine, ui_gfx_state *state, int big_file, int range);
 
 /* tilemap handling */
 static void tilemap_handle_keys(running_machine *machine, ui_gfx_state *state, int viswidth, int visheight);
@@ -236,7 +267,9 @@ cancel:
 static void palette_handler(running_machine *machine, ui_gfx_state *state)
 {
 	int total = state->palette.which ? colortable_palette_get_size(machine->colortable) : machine->config->total_colors;
-	const char *title = state->palette.which ? "COLORTABLE" : "PALETTE";
+	char title[256];
+	int rowcount, screencount;
+
 	const rgb_t *raw_color = palette_entry_list_raw(machine->palette);
 	render_font *ui_font = ui_get_font();
 	float cellwidth, cellheight;
@@ -246,6 +279,11 @@ static void palette_handler(running_machine *machine, ui_gfx_state *state)
 	render_bounds cellboxbounds;
 	render_bounds boxbounds;
 	int x, y, skip;
+
+	rowcount = state->palette.count;
+	screencount = rowcount * rowcount;
+
+	sprintf(title, "%s (%d/0x%x entries)", state->palette.which ? "COLORTABLE" : "PALETTE", total, total);
 
 	/* add a half character padding for the box */
 	chheight = ui_get_line_height();
@@ -403,6 +441,9 @@ static void palette_handle_keys(running_machine *machine, ui_gfx_state *state)
 	if (ui_input_pressed_repeat(machine, IPT_UI_END, 4))
 		state->palette.offset = total;
 
+	if (ui_input_pressed(machine, IPT_UI_SAVE))
+		palette_save(machine, state, total);
+
 	/* clamp within range */
 	if (state->palette.offset + screencount > ((total + rowcount - 1) / rowcount) * rowcount)
 		state->palette.offset = ((total + rowcount - 1) / rowcount) * rowcount - screencount;
@@ -511,7 +552,7 @@ static void gfxset_handler(running_machine *machine, ui_gfx_state *state)
 
 	/* figure out the title and expand the outer box to fit */
 	for (x = 0; x < MAX_GFX_ELEMENTS && machine->gfx[x] != NULL; x++) ;
-	sprintf(title, "GFX %d/%d %dx%d COLOR %X", state->gfxset.set, x - 1, gfx->width, gfx->height, state->gfxset.color[set]);
+	sprintf(title, "GFX: %d/%d %dx%d COLOR: %d/%d", state->gfxset.set + 1, x, gfx->width, gfx->height, state->gfxset.color[set] + 1, gfx->total_colors);
 	titlewidth = render_font_get_string_width(ui_font, chheight, render_get_ui_aspect(), title);
 	x0 = 0.0f;
 	if (boxbounds.x1 - boxbounds.x0 < titlewidth + chwidth)
@@ -645,6 +686,34 @@ static void gfxset_handle_keys(running_machine *machine, ui_gfx_state *state, in
 	if (ui_input_pressed_repeat(machine, IPT_UI_END, 4))
 		state->gfxset.offset[set] = gfx->total_elements;
 
+	if (ui_input_pressed(machine, IPT_UI_SWITCH_GAP))
+	{
+		gap[set] ^= 1;
+		state->bitmap_dirty = TRUE;
+	}
+
+	if (ui_input_pressed(machine, IPT_UI_SHIFT_SAVE))
+	{
+		// Save all set as several files
+		gfxset_save(machine, state, 0, -1);
+	}
+	if (ui_input_pressed(machine, IPT_UI_SAVE))
+	{
+		// Save all set as one big file
+		gfxset_save(machine, state, 1, -1);
+	}
+
+	if (ui_input_pressed(machine, IPT_UI_CTRL_SHIFT_SAVE))
+	{
+		// Save 1 set as several files
+		gfxset_save(machine, state, 0, set);
+	}
+	if (ui_input_pressed(machine, IPT_UI_CTRL_SAVE))
+	{
+		// Save 1 set as one big file
+		gfxset_save(machine, state, 1, set);
+	}
+
 	/* clamp within range */
 	if (state->gfxset.offset[set] + xcells * ycells > ((gfx->total_elements + xcells - 1) / xcells) * xcells)
 		state->gfxset.offset[set] = ((gfx->total_elements + xcells - 1) / xcells) * xcells - xcells * ycells;
@@ -658,10 +727,10 @@ static void gfxset_handle_keys(running_machine *machine, ui_gfx_state *state, in
 		state->gfxset.color[set] += 1;
 
 	/* clamp within range */
-	if (state->gfxset.color[set] >= (int)gfx->total_colors)
-		state->gfxset.color[set] = gfx->total_colors - 1;
-	if (state->gfxset.color[set] < 0)
+	if (state->gfxset.color[set] >= (int) gfx->total_colors)
 		state->gfxset.color[set] = 0;
+	if (state->gfxset.color[set] < 0)
+		state->gfxset.color[set] = gfx->total_colors - 1;
 
 	/* if something changed, we need to force an update to the bitmap */
 	if (state->gfxset.set != oldstate.gfxset.set ||
@@ -673,7 +742,6 @@ static void gfxset_handle_keys(running_machine *machine, ui_gfx_state *state, in
 		state->bitmap_dirty = TRUE;
 	}
 }
-
 
 /*-------------------------------------------------
     gfxset_update_bitmap - redraw the current
@@ -687,8 +755,8 @@ static void gfxset_update_bitmap(running_machine *machine, ui_gfx_state *state, 
 	int x, y;
 
 	/* compute the number of source pixels in a cell */
-	cellxpix = 1 + ((state->gfxset.rotate[set] & ORIENTATION_SWAP_XY) ? gfx->height : gfx->width);
-	cellypix = 1 + ((state->gfxset.rotate[set] & ORIENTATION_SWAP_XY) ? gfx->width : gfx->height);
+	cellxpix = gap[state->gfxset.set] + ((state->gfxset.rotate[set] & ORIENTATION_SWAP_XY) ? gfx->height : gfx->width);
+	cellypix = gap[state->gfxset.set] + ((state->gfxset.rotate[set] & ORIENTATION_SWAP_XY) ? gfx->width : gfx->height);
 
 	/* realloc the bitmap if it is too small */
 	if (state->bitmap == NULL || state->texture == NULL || state->bitmap->bpp != 32 || state->bitmap->width != cellxpix * xcells || state->bitmap->height != cellypix * ycells)
@@ -1077,4 +1145,610 @@ static void tilemap_update_bitmap(running_machine *machine, ui_gfx_state *state,
 		render_texture_set_bitmap(state->texture, state->bitmap, NULL, screen_texformat, palette);
 		state->bitmap_dirty = FALSE;
 	}
+}
+
+/***************************************************************************
+    DATA SAVING
+***************************************************************************/
+
+/*-------------------------------------------------
+    palette_save - save the current 24 bits palette
+    as a JASC palette format into a file.
+-------------------------------------------------*/
+int palette_session_counter = 0;
+
+void palette_save(running_machine *machine, ui_gfx_state *state, int total)
+{
+	int i;
+	FILE *output;
+	pen_t pen;
+	const rgb_t *raw_color = palette_entry_list_raw(machine->palette);
+	char filename[1024];
+
+	// Try to create the directory where we will save the data
+	mkdir((char *) machine->basename);
+
+	memset(filename, 0, sizeof(filename));
+	strcpy(filename, machine->basename);
+	sprintf(filename, "%s\\%s_%.3d.pal",  machine->basename, machine->basename, palette_session_counter);
+
+	printf("Saving palette as '%s'... ", filename);
+	output = fopen(filename, "wb");
+	if(output)
+	{
+        fprintf(output, "JASC-PAL\r\n");
+        fprintf(output, "0100\r\n");
+        fprintf(output, "%d\r\n", total);
+        for(i = 0; i < total; i++)
+		{
+			pen = state->palette.which ? colortable_palette_get_color(machine->colortable, i) : raw_color[i];
+            fprintf(output, "%d %d %d\r\n", ((pen & 0xff0000) >> 16),
+                                            ((pen & 0x00ff00) >> 8),
+                                            ((pen & 0x00ff))
+                                            );
+		}
+		fclose(output);
+		printf("%d entries.\n", total);
+		palette_session_counter++;
+	}
+	else
+	{
+		printf("Unable to save palette.\n");
+	}
+}
+
+
+/*-------------------------------------------------
+    gfxset_save - save all the current gfxset with
+    the different palettes in bmp files.
+-------------------------------------------------*/
+
+int gfxset_session_counter_big = 0;
+int gfxset_session_counter = 0;
+RGBTRI *tiles_save_block;
+RGBTRI tile_pad[16];
+
+BITMAPFILEHEADER bmp_file_header;
+BITMAPINFOHEADER bmp_info_header;
+
+// Return the number of used colors and fill tab_used_colors[]
+int tab_used_colors[256];
+int get_number_colors(gfx_element *gfx, int rotate)
+{
+	UINT8 *src;
+	int x;
+	int y;
+	int k;
+	int width;
+	int height;
+	int nbr_used_colors;
+	
+	nbr_used_colors = 0;	
+	memset(tab_used_colors, 0, sizeof(tab_used_colors));
+
+	width = (rotate & ORIENTATION_SWAP_XY) ? gfx->height : gfx->width;
+	height = (rotate & ORIENTATION_SWAP_XY) ? gfx->width : gfx->height;
+	
+	for(k = 0; k < gfx->total_elements; k++)
+	{
+		src = gfx->gfxdata + (k * gfx->char_modulo);
+		for (y = 0; y < height; y++)
+		{
+			for (x = 0; x < width; x++)
+			{
+				int effx = x;
+				int effy = y;
+				rgb_t pixel;
+				UINT8 *s;
+
+				// Compute effective x,y values after rotation
+				if (!(rotate & ORIENTATION_SWAP_XY))
+				{
+					if (rotate & ORIENTATION_FLIP_X)
+						effx = gfx->width - 1 - effx;
+					if (rotate & ORIENTATION_FLIP_Y)
+						effy = gfx->height - 1 - effy;
+				}
+				else
+				{
+					int temp;
+					if (rotate & ORIENTATION_FLIP_X)
+						effx = gfx->height - 1 - effx;
+					if (rotate & ORIENTATION_FLIP_Y)
+						effy = gfx->width - 1 - effy;
+					temp = effx;
+					effx = effy;
+					effy = temp;
+				}
+
+				// Get a pointer to the start of this source row
+				s = src + effy * gfx->line_modulo;
+
+				if (gfx->flags & GFX_ELEMENT_PACKED)
+					pixel = (s[effx / 2] >> ((effx & 1) * 4)) & 0xf;
+				else
+					pixel = s[effx];
+
+				if(!tab_used_colors[pixel])
+				{
+					tab_used_colors[pixel] = 1;
+					nbr_used_colors++;
+				}
+			}
+		}
+	}
+	return(nbr_used_colors);
+}
+
+// I'll also need a gimp plugin to save as planar (and especially to handle the halfbrite mode).
+void gfxset_save(running_machine *machine, ui_gfx_state *state, int big_file, int range)
+{
+	int i;
+	int j;
+	int jj;
+	int k;
+	int l;
+	int size_output;
+	FILE *output;
+	gfx_element *gfx;
+	int max_gfx_page = 0;
+	char filename[1024];
+	int cellxpix;
+	int validated;
+	int pending;
+	int cellypix;
+	int rotate;
+	int nbr_tile;
+	int real_total_colors;
+	int tiles_row;
+	int start_range;
+	int pad;
+	int nbr_used_colors;
+	int palette_not_found;
+	int *colors_flags;
+	bitmap_t *bitmap;
+	UINT32 palette_mask;
+	const rgb_t *palette;
+	const rgb_t *palette2;
+	rgb_t color;
+	UINT32 rowpixels;
+	RGBTRI *dest;
+	RGBTRI *tmpdest;
+	UINT8 *src;
+	rgb_t first_color = -1;
+	int final_width;
+	int file_number;
+	int empty = 1;
+	static const pen_t default_palette[] =
+	{
+		MAKE_RGB(0,0,0), MAKE_RGB(0,0,255), MAKE_RGB(0,255,0), MAKE_RGB(0,255,255),
+		MAKE_RGB(255,0,0), MAKE_RGB(255,0,255), MAKE_RGB(255,255,0), MAKE_RGB(255,255,255)
+	};
+	int width;
+	int height;
+	int x;
+	int y;
+
+	palette = (machine->config->total_colors != 0) ? palette_entry_list_raw(machine->palette) : NULL;
+	bitmap = state->bitmap;
+	rowpixels = bitmap->rowpixels;
+	memset(filename, 0, sizeof(filename));
+
+	// Count the number of gfx pages we have to save
+	if(range == -1)
+	{
+		for (i = 0; i < MAX_GFX_ELEMENTS; i++)
+		{
+			if (machine->gfx[i] == NULL) break;
+		}
+		start_range = 0;
+		max_gfx_page = i;
+	}
+	else
+	{
+		// Only save 1 page
+		start_range = range;
+		max_gfx_page = range + 1;
+	}
+	
+	memset(tile_pad, 0, sizeof(tile_pad));
+
+	// Try to create the directory where we will save the data
+	mkdir((char *) machine->basename);
+
+	// For each selected page
+	for(i = start_range; i < max_gfx_page; i++)
+	{
+		gfx = machine->gfx[i];
+		rotate = state->gfxset.rotate[i];
+		tiles_row = state->gfxset.count[i];
+
+		cellxpix = ((state->gfxset.rotate[i] & ORIENTATION_SWAP_XY) ? gfx->height : gfx->width);
+		cellypix = ((state->gfxset.rotate[i] & ORIENTATION_SWAP_XY) ? gfx->width : gfx->height);
+		width = (rotate & ORIENTATION_SWAP_XY) ? gfx->height : gfx->width;
+		height = (rotate & ORIENTATION_SWAP_XY) ? gfx->width : gfx->height;
+
+		// Count the number of colors used by the tiles page
+		nbr_used_colors = get_number_colors(gfx, rotate);
+
+		colors_flags = (int *) malloc(gfx->total_colors * sizeof(int));
+		if(colors_flags)
+		{
+			memset(colors_flags, 0, gfx->total_colors * sizeof(int));
+			
+			// Calc the real number of palettes
+			palette = (machine->config->total_colors != 0) ? palette_entry_list_raw(machine->palette) : NULL;
+			if (palette != NULL)
+			{
+				real_total_colors = 0;
+				// Check all the palettes and determine the redundant ones
+				for(j = 0; j < gfx->total_colors; j++)
+				{
+					palette_not_found = 0;
+					validated = 0;
+					pending = 0;
+					for(l = 0; l < gfx->total_colors; l++)
+					{
+						if(j != l)
+						{
+							palette = palette_entry_list_raw(machine->palette) + gfx->color_base + (j * gfx->color_granularity);
+							palette2 = palette_entry_list_raw(machine->palette) + gfx->color_base + (l * gfx->color_granularity);
+							for(k = 0; k < 256; k++)
+							{
+								if(tab_used_colors[k])
+								{
+									if((palette[k] & 0xffffff) != (palette2[k] & 0xffffff))
+									{
+										// Not the same picture
+										palette_not_found++;
+										break;
+									}
+								}
+							}
+							// Picture was the same one
+							if(k == 256)
+							{
+								pending++;
+								if(colors_flags[l] == 0)
+								{
+									validated++;
+								}
+							}
+						}
+					}
+					if(validated == pending && validated)
+					{
+						colors_flags[j] = -1;
+						real_total_colors++;
+					}
+
+					if(palette_not_found == (gfx->total_colors - 1))
+					{
+						colors_flags[j] = -1;
+						real_total_colors++;
+					}
+
+					// Check if the palette is monochrome
+					palette = palette_entry_list_raw(machine->palette) + gfx->color_base + (j * gfx->color_granularity);
+					first_color = -1;
+					empty = 1;
+					for(k = 0; k < 256; k++)
+					{
+						if(tab_used_colors[k])
+						{
+							color = palette[k];
+							if(first_color == -1)
+							{
+								first_color = color & 0xffffff;
+							}
+							else
+							{
+								// We need at least 1 pixel with a different color
+								if(first_color != (color & 0xffffff))
+								{
+									empty = 0;
+									break;
+								}
+							}
+						}
+					}
+					// Remove the page
+					if(empty)
+					{
+						colors_flags[j] = 0;
+						real_total_colors--;
+					}
+
+				}
+			}
+			else
+			{
+				real_total_colors = gfx->total_colors;
+				memset(colors_flags, 1, gfx->total_colors * sizeof(int));
+			}
+	
+			bmp_file_header.bfType = 0x4d42;
+	  		bmp_file_header.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+			bmp_file_header.bfReserved1 = 0; 
+			bmp_file_header.bfReserved2 = 0;
+	
+			bmp_info_header.biSize = sizeof(BITMAPINFOHEADER);
+			// width of a tile * (number of tiles / row) * number of pages of tiles
+			if(big_file) final_width = (width + gap[i]) * tiles_row * real_total_colors;
+			else final_width = (width + gap[i]) * tiles_row;
+
+			pad = (final_width % 16);
+			bmp_info_header.biWidth = final_width + pad;
+			bmp_info_header.biHeight = (height + gap[i]) * ((gfx->total_elements / tiles_row));
+			if(gfx->total_elements % tiles_row) bmp_info_header.biHeight += height;
+			bmp_file_header.bfSize = (bmp_info_header.biWidth * bmp_info_header.biHeight * sizeof(RGBTRI)) + bmp_file_header.bfOffBits;
+			bmp_info_header.biPlanes = 1;
+			bmp_info_header.biBitCount = 24;
+			bmp_info_header.biCompression = 0;
+			bmp_info_header.biSizeImage = 0;
+			bmp_info_header.biXPelsPerMeter = 0;
+			bmp_info_header.biYPelsPerMeter = 0;
+			bmp_info_header.biClrUsed = 0;
+			bmp_info_header.biClrImportant = 0;
+	
+			size_output = bmp_info_header.biWidth * bmp_info_header.biHeight * sizeof(RGBTRI);
+	
+			tiles_save_block = (RGBTRI *) malloc(size_output);
+			if(tiles_save_block)
+			{
+				memset(tiles_save_block, 0, size_output);
+
+				if(big_file)
+				{
+					// Save as one big file
+					sprintf(filename, "%s\\gfx%.3d_%.3d.bmp", machine->basename, i, gfxset_session_counter_big + 1);
+					printf("Saving gfx set as '%s' (%d tiles (%dx%d) / row)... ", filename, tiles_row, width, height);
+	
+					output = fopen(filename, "wb");
+					if(output)
+					{
+						// Bmp header
+						fwrite(&bmp_file_header, 1, sizeof(BITMAPFILEHEADER), output);
+						fwrite(&bmp_info_header, 1, sizeof(BITMAPINFOHEADER), output);
+		
+						tmpdest = tiles_save_block + (bmp_info_header.biHeight * bmp_info_header.biWidth);
+						// Make such we start at the top (since the picture is reversed)
+						tmpdest += (gap[i] * bmp_info_header.biWidth);
+			
+						nbr_tile = 0;
+						// For each element
+						do
+						{
+							tmpdest -= ((height + gap[i]) * bmp_info_header.biWidth);
+							// Loop over rows in the cell
+							for (y = 0; y < height; y++)
+							{
+								// For each palette
+								jj = 0;
+								for(j = 0; j < gfx->total_colors; j++)
+								{
+									if(colors_flags[j] == -1)
+									{
+										// For each tile
+										for(k = 0; k < tiles_row; k++)
+										{
+											if((nbr_tile + k) >= gfx->total_elements) break;
+											// Select the palette
+											palette_mask = ~0;
+											palette = (machine->config->total_colors != 0) ? palette_entry_list_raw(machine->palette) : NULL;
+											if (palette != NULL)
+											{
+												palette += gfx->color_base + (j /*& 0x7f*/) * gfx->color_granularity;
+											}
+											else
+											{
+												palette = default_palette;
+												palette_mask = 7;
+											}
+				
+											dest = tmpdest + (k * (width + gap[i])) + (jj * (width + gap[i]) * tiles_row) + (((height - 1) - y) * bmp_info_header.biWidth);
+											src = gfx->gfxdata + (nbr_tile * gfx->char_modulo) + (k * gfx->char_modulo);
+		
+											// Loop over columns in the cell
+											for (x = 0; x < width; x++)
+											{
+												int effx = x;
+												int effy = y;
+												rgb_t pixel;
+												UINT8 *s;
+				
+												// Compute effective x,y values after rotation
+												if (!(rotate & ORIENTATION_SWAP_XY))
+												{
+													if (rotate & ORIENTATION_FLIP_X)
+														effx = gfx->width - 1 - effx;
+													if (rotate & ORIENTATION_FLIP_Y)
+														effy = gfx->height - 1 - effy;
+												}
+												else
+												{
+													int temp;
+													if (rotate & ORIENTATION_FLIP_X)
+														effx = gfx->height - 1 - effx;
+													if (rotate & ORIENTATION_FLIP_Y)
+														effy = gfx->width - 1 - effy;
+													temp = effx;
+													effx = effy;
+													effy = temp;
+												}
+						
+												// Get a pointer to the start of this source row
+												s = src + effy * gfx->line_modulo;
+						
+												// Extract the pixel
+												if (gfx->flags & GFX_ELEMENT_PACKED)
+													pixel = (s[effx / 2] >> ((effx & 1) * 4)) & 0xf;
+												else
+													pixel = s[effx];
+												
+												dest->rgbBlue = (palette[pixel & palette_mask] & 0xff);
+												dest->rgbGreen = (palette[pixel & palette_mask] & 0xff00) >> 8;
+												dest->rgbRed = (palette[pixel & palette_mask] & 0xff0000) >> 16;
+												dest++;
+											}
+										}
+										jj++;
+									}
+								}
+							}
+							nbr_tile += tiles_row;
+						}
+						while(nbr_tile < gfx->total_elements);
+			
+						// Save everything now
+						fwrite(tiles_save_block, 1, size_output, output);
+			
+						printf("saved %d tiles in %d colors.\n", gfx->total_elements, nbr_used_colors);
+						fclose(output);
+					}
+					else
+					{
+						printf("Unable to save gfx set.\n");
+						free(tiles_save_block);
+						return;
+					}
+				}
+				else
+				{
+					file_number = 0;
+		
+					// For each palette
+					for(j = 0; j < gfx->total_colors; j++)
+					{
+						if(colors_flags[j] == -1)
+						{
+							sprintf(filename, "%s\\gfx%.3d_%.3d_%.3d.bmp", machine->basename, i, gfxset_session_counter + 1, file_number);
+							printf("Saving gfx set as '%s' (%d tiles (%dx%d) / row)... ", filename, tiles_row, width, height);
+
+							output = fopen(filename, "wb");
+							if(output)
+							{
+								// Bmp header
+								fwrite(&bmp_file_header, 1, sizeof(BITMAPFILEHEADER), output);
+								fwrite(&bmp_info_header, 1, sizeof(BITMAPINFOHEADER), output);
+
+								tmpdest = tiles_save_block + (bmp_info_header.biHeight * bmp_info_header.biWidth);
+								// Make such we start at the top (since the picture is reversed)
+								tmpdest += (gap[i] * bmp_info_header.biWidth);
+								
+								nbr_tile = 0;
+
+								// For each element
+								do
+								{
+									tmpdest -= ((height + gap[i]) * bmp_info_header.biWidth);
+									// Loop over rows in the cell
+									for (y = 0; y < height; y++)
+									{
+										// For each tile in a row
+										for(k = 0; k < tiles_row; k++)
+										{
+											if((nbr_tile + k) >= gfx->total_elements) break;
+											// Select the palette
+											palette_mask = ~0;
+											palette = (machine->config->total_colors != 0) ? palette_entry_list_raw(machine->palette) : NULL;
+											if (palette != NULL)
+											{
+												palette += gfx->color_base + (j /*& 0x7f*/) * gfx->color_granularity;
+											}
+											else
+											{
+												palette = default_palette;
+												palette_mask = 7;
+											}
+				
+											dest = tmpdest + (k * (width + gap[i])) + (((height - 1) - y) * bmp_info_header.biWidth);
+											src = gfx->gfxdata + (nbr_tile * gfx->char_modulo) + (k * gfx->char_modulo);
+		
+											// Loop over columns in the cell
+											for (x = 0; x < width; x++)
+											{
+												int effx = x;
+												int effy = y;
+												rgb_t pixel;
+												UINT8 *s;
+				
+												// Compute effective x,y values after rotation
+												if (!(rotate & ORIENTATION_SWAP_XY))
+												{
+													if (rotate & ORIENTATION_FLIP_X)
+														effx = gfx->width - 1 - effx;
+													if (rotate & ORIENTATION_FLIP_Y)
+														effy = gfx->height - 1 - effy;
+												}
+												else
+												{
+													int temp;
+													if (rotate & ORIENTATION_FLIP_X)
+														effx = gfx->height - 1 - effx;
+													if (rotate & ORIENTATION_FLIP_Y)
+														effy = gfx->width - 1 - effy;
+													temp = effx;
+													effx = effy;
+													effy = temp;
+												}
+						
+												// Get a pointer to the start of this source row
+												s = src + effy * gfx->line_modulo;
+						
+												// Extract the pixel
+												if (gfx->flags & GFX_ELEMENT_PACKED)
+													pixel = (s[effx / 2] >> ((effx & 1) * 4)) & 0xf;
+												else
+													pixel = s[effx];
+												
+												dest->rgbBlue = (palette[pixel & palette_mask] & 0xff);
+												dest->rgbGreen = (palette[pixel & palette_mask] & 0xff00) >> 8;
+												dest->rgbRed = (palette[pixel & palette_mask] & 0xff0000) >> 16;
+												dest++;
+											}
+										}
+									}
+									nbr_tile += tiles_row;
+								}
+								while(nbr_tile < gfx->total_elements);
+								
+								// Save everything now
+								fwrite(tiles_save_block, 1, size_output, output);
+								printf("saved %d tiles in %d colors.\n", gfx->total_elements, nbr_used_colors);
+								fclose(output);
+							}
+							else
+							{
+								printf("Unable to save gfx set.\n");
+								free(tiles_save_block);
+								return;
+							}
+							file_number++;
+						}
+					}
+
+				}
+
+				free(tiles_save_block);
+
+			}
+			else
+			{
+				printf("Not enough memory.\n");
+			}
+			free(colors_flags);
+		}
+		else
+		{
+			printf("Not enough memory.\n");
+		}
+	}
+	
+	// increase the global session counter
+	// so we can save the gfxset several time without overwriting previous files if the palette changes
+	if(big_file) gfxset_session_counter_big++;
+	else gfxset_session_counter++;
+
+	printf("Done.\n");
 }

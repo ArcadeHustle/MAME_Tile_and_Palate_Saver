@@ -61,6 +61,7 @@ int audit_images(core_options *options, const game_driver *gamedrv, UINT32 valid
 	const rom_source *source;
 	audit_record *record;
 	int foundany = FALSE;
+	int anyrequired = FALSE;
 	int allshared = TRUE;
 	int records;
 
@@ -73,8 +74,13 @@ int audit_images(core_options *options, const game_driver *gamedrv, UINT32 valid
 			for (rom = rom_first_file(region); rom != NULL; rom = rom_next_file(rom))
 				if (ROMREGION_ISROMDATA(region) || ROMREGION_ISDISKDATA(region))
 				{
-					if (source_is_gamedrv && allshared && !rom_used_by_parent(gamedrv, rom, NULL))
-						allshared = FALSE;
+					if (source_is_gamedrv && !ROM_ISOPTIONAL(rom) && !ROM_NOGOODDUMP(rom))
+					{
+						anyrequired = TRUE;
+
+						if (allshared && !rom_used_by_parent(gamedrv, rom, NULL))
+							allshared = FALSE;
+					}
 					records++;
 				}
 	}
@@ -83,7 +89,6 @@ int audit_images(core_options *options, const game_driver *gamedrv, UINT32 valid
 	{
 		/* allocate memory for the records */
 		*audit = malloc_or_die(sizeof(**audit) * records);
-		memset(*audit, 0, sizeof(**audit) * records);
 		record = *audit;
 
 		/* iterate over ROM sources and regions */

@@ -376,7 +376,7 @@ VIDEO_UPDATE( prosoccr )
 
 VIDEO_UPDATE( prosport )
 {
-	int mx,my,tile,color,offs;
+	int mx,my,tile/*,color*/,offs;
 
 	bitmap_fill(bitmap,cliprect,0);
 
@@ -389,7 +389,7 @@ VIDEO_UPDATE( prosport )
 
 		if (!tile) continue;
 
-		color=1;//(videoram[offs]&0x70)>>4;
+//		color=1;//(videoram[offs]&0x70)>>4;
 		my = (offs) % 32;
 		mx = (offs) / 32;
 

@@ -303,7 +303,7 @@ typedef struct _ygv608 {
     SPRITE_ATTR		s[YGV608_MAX_SPRITES];
   } sprite_attribute_table;
 
-  UINT8 scroll_data_table[2][256];
+  UINT8 scroll_data_table[2][512];
   UINT8 colour_palette[256][3];
 
   /*

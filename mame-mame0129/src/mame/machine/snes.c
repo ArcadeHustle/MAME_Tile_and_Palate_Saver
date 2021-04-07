@@ -129,9 +129,10 @@ static TIMER_CALLBACK( snes_scanline_tick )
 	/* Horizontal IRQ timer */
 	if( snes_ram[NMITIMEN] & 0x10 )
 	{
-		int setirq = 1;
+		int setirq;
 		int pixel = ((snes_ram[HTIMEH] << 8) | snes_ram[HTIMEL]) & 0x1ff;
 
+		setirq = 1;
 		// is the HIRQ on a specific scanline?
 		if (snes_ram[NMITIMEN] & 0x20)
 		{
@@ -153,7 +154,7 @@ static TIMER_CALLBACK( snes_scanline_tick )
 				timer_adjust_oneshot(snes_hirq_timer, video_screen_get_time_until_pos(machine->primary_screen, snes_ppu.beam.current_vert, pixel*snes_htmult), 0);
 			}
 		}
-    	}
+    }
 
 	/* Start of VBlank */
 	if( snes_ppu.beam.current_vert == snes_ppu.beam.last_visible_line )

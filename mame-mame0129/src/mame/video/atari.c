@@ -1254,9 +1254,12 @@ INLINE void LMS(running_machine *machine, int new_cmd)
     {
     	const address_space *space = cpu_get_address_space(machine->cpu[0], ADDRESS_SPACE_PROGRAM);
 		int addr = RDANTIC(space);
-        antic.doffs = ++antic.doffs & DOFFS;
+        int antic_d;
+        antic_d = ++antic.doffs;
+        antic.doffs = antic_d & DOFFS;
         addr += 256 * RDANTIC(space);
-        antic.doffs = ++antic.doffs & DOFFS;
+        antic_d = ++antic.doffs;
+        antic.doffs = antic_d & DOFFS;
         antic.vpage = addr & VPAGE;
         antic.voffs = addr & VOFFS;
 		LOG(("           LMS $%04x\n", addr));
@@ -1290,9 +1293,11 @@ static void antic_scanline_dma(running_machine *machine, int param)
 				int h = 0, w = antic.w.dmactl & 3;
 				UINT8 vscrol_subtract = 0;
 				UINT8 new_cmd;
+                int antic_d;
 
 				new_cmd = RDANTIC(space);
-				antic.doffs = ++antic.doffs & DOFFS;
+                antic_d = ++antic.doffs;
+				antic.doffs = antic_d & DOFFS;
 				/* steal at one clock cycle from the CPU for fetching the command */
                 antic.steal_cycles += 1;
 				LOG(("           ANTIC CMD $%02x\n", new_cmd));
@@ -1355,7 +1360,9 @@ static void antic_scanline_dma(running_machine *machine, int param)
 					if( new_cmd & ANTIC_LMS )
 					{
 						int addr = RDANTIC(space);
-                        antic.doffs = ++antic.doffs & DOFFS;
+                        int antic_d;
+                        antic_d = ++antic.doffs;
+                        antic.doffs = antic_d & DOFFS;
                         addr += 256 * RDANTIC(space);
                         antic.dpage = addr & DPAGE;
                         antic.doffs = addr & DOFFS;
@@ -1368,7 +1375,9 @@ static void antic_scanline_dma(running_machine *machine, int param)
 					else
 					{
 						int addr = RDANTIC(space);
-                        antic.doffs = ++antic.doffs & DOFFS;
+                        int antic_d;
+                        antic_d = ++antic.doffs;
+                        antic.doffs = antic_d & DOFFS;
                         addr += 256 * RDANTIC(space);
                         antic.dpage = addr & DPAGE;
                         antic.doffs = addr & DOFFS;

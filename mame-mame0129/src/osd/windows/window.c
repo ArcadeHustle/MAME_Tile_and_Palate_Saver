@@ -1553,6 +1553,12 @@ static void get_min_bounds(win_window_info *window, RECT *bounds, int constrain)
 	if (minheight < MIN_WINDOW_DIM)
 		minheight = MIN_WINDOW_DIM;
 
+	if(video_config.windowzoom > 1)
+	{
+		minwidth *= video_config.windowzoom;
+		minheight *= video_config.windowzoom;
+	}
+
 	// account for extra window stuff
 	minwidth += wnd_extra_width(window);
 	minheight += wnd_extra_height(window);
@@ -1589,6 +1595,10 @@ static void get_min_bounds(win_window_info *window, RECT *bounds, int constrain)
 
 	// get the window rect
 	GetWindowRect(window->hwnd, bounds);
+	bounds->left = (GetSystemMetrics(SM_CXSCREEN) - minwidth) / 2;
+	bounds->top = (GetSystemMetrics(SM_CYSCREEN) - minheight) / 2;
+    if(bounds->left < 0) bounds->left = 0;
+    if(bounds->top < 0) bounds->top = 0;
 
 	// now adjust
 	bounds->right = bounds->left + minwidth;

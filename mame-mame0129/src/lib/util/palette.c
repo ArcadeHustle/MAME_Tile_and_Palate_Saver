@@ -120,8 +120,10 @@ palette_t *palette_alloc(UINT32 numcolors, UINT32 numgroups)
 		palette->gamma_map[index] = index;
 
 	/* allocate an array of palette entries and individual contrasts for each */
-	palette->entry_color = malloc(sizeof(*palette->entry_color) * numcolors);
-	palette->entry_contrast = malloc(sizeof(*palette->entry_contrast) * numcolors);
+	/* allocate *4 to avoid some crash in the tiles viewer (also clear them before hand) */
+	palette->entry_color = malloc(sizeof(*palette->entry_color) * numcolors * 4);
+	memset(palette->entry_color, 0, sizeof(*palette->entry_color) * numcolors * 4);
+	palette->entry_contrast = malloc(sizeof(*palette->entry_contrast) * numcolors * 4);
 	if (palette->entry_color == NULL || palette->entry_contrast == NULL)
 		goto error;
 
@@ -133,8 +135,8 @@ palette_t *palette_alloc(UINT32 numcolors, UINT32 numgroups)
 	}
 
 	/* allocate an array of brightness and contrast for each group */
-	palette->group_bright = malloc(sizeof(*palette->group_bright) * numgroups);
-	palette->group_contrast = malloc(sizeof(*palette->group_contrast) * numgroups);
+	palette->group_bright = malloc(sizeof(*palette->group_bright) * numgroups * 4);
+	palette->group_contrast = malloc(sizeof(*palette->group_contrast) * numgroups * 4);
 	if (palette->group_bright == NULL || palette->group_contrast == NULL)
 		goto error;
 
@@ -146,8 +148,8 @@ palette_t *palette_alloc(UINT32 numcolors, UINT32 numgroups)
 	}
 
 	/* allocate arrays for the adjusted colors */
-	palette->adjusted_color = malloc(sizeof(*palette->adjusted_color) * (numcolors * numgroups + 2));
-	palette->adjusted_rgb15 = malloc(sizeof(*palette->adjusted_rgb15) * (numcolors * numgroups + 2));
+	palette->adjusted_color = malloc(sizeof(*palette->adjusted_color) * (numcolors * numgroups + 2) * 4);
+	palette->adjusted_rgb15 = malloc(sizeof(*palette->adjusted_rgb15) * (numcolors * numgroups + 2) * 4);
 	if (palette->adjusted_color == NULL || palette->adjusted_rgb15 == NULL)
 		goto error;
 

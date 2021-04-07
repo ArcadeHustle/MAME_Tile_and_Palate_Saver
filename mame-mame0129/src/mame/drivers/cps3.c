@@ -1108,9 +1108,9 @@ static VIDEO_UPDATE(cps3)
 					int endline;
 					int height = (value3 & 0x7f000000)>>24;
 					int uu;
-					UINT32* tmapregs[4] = { tilemap20_regs_base, tilemap30_regs_base, tilemap40_regs_base, tilemap50_regs_base };
-					UINT32* regs;
-					regs = tmapregs[tilemapnum];
+					//UINT32* tmapregs[4] = { tilemap20_regs_base, tilemap30_regs_base, tilemap40_regs_base, tilemap50_regs_base };
+					//UINT32* regs;
+					//regs = tmapregs[tilemapnum];
 					endline = value2;
 					startline = endline - height;
 

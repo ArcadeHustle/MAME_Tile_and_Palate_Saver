@@ -321,13 +321,13 @@ int osd_uchar_from_osdchar(UINT32 *uchar, const char *osdchar, size_t count)
 DWORD create_path_recursive(const TCHAR *path)
 {
 	TCHAR *sep = _tcsrchr(path, '\\');
-	file_error filerr;
+//	file_error filerr;
 
 	// if there's still a separator, and it's not the root, nuke it and recurse
 	if (sep != NULL && sep > path && sep[0] != ':' && sep[-1] != '\\')
 	{
 		*sep = 0;
-		filerr = create_path_recursive(path);
+		/*filerr = */create_path_recursive(path);
 		*sep = '\\';
 	}
 

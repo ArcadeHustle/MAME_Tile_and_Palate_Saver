@@ -856,7 +856,7 @@ static MACHINE_START(meritm_crt250_questions)
 static MACHINE_START(meritm_crt260)
 {
 	meritm_ram = auto_malloc( 0x8000 );
-	memset( meritm_ram, 0x8000, 0x00 );
+	memset( meritm_ram, 0x00, 0x8000 );
 	memory_configure_bank(machine, 1, 0, 128, memory_region(machine, "main"), 0x8000);
 	memory_configure_bank(machine, 2, 0, 128, memory_region(machine, "main"), 0x8000);
 	memory_configure_bank(machine, 3, 0, 4, meritm_ram, 0x2000);

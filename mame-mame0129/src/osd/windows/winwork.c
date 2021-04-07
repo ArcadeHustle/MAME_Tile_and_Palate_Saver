@@ -675,13 +675,13 @@ static unsigned __stdcall worker_thread_entry(void *param)
 	for ( ;; )
 	{
 		// block waiting for work or exit
-		DWORD result = WAIT_OBJECT_0;
+//		DWORD result = WAIT_OBJECT_0;
 
 		// bail on exit, and only wait if there are no pending items in queue
 		if (!queue->exiting && queue->list == NULL)
 		{
 			begin_timing(thread->waittime);
-			result = WaitForSingleObject(thread->wakeevent, INFINITE);
+			/*result = */WaitForSingleObject(thread->wakeevent, INFINITE);
 			end_timing(thread->waittime);
 		}
 		if (queue->exiting)
